@@ -1,5 +1,5 @@
 import unittest
-from app import calculate_charging_time
+from app import calculate_charging_time, calculate_costs
 
 class TestCalculateChargingTime(unittest.TestCase):
     def test_standard_charging_scenario(self):
@@ -101,6 +101,49 @@ class TestCalculateChargingTime(unittest.TestCase):
                 start_percentage=20,
                 end_percentage=110
             )
+
+class TestCalculateCosts(unittest.TestCase):
+    """Test cases for cost calculations"""
+    
+    def test_standard_cost_calculation(self):
+        """Test cost calculation with standard values"""
+        energy_needed, total_cost, cost_for_full = calculate_costs(
+            battery_size=26.8,
+            start_percentage=20,
+            end_percentage=80,
+            cost_per_kwh=0.16428
+        )
+        
+        self.assertAlmostEqual(energy_needed, 16.08, places=2)  # 26.8 * 0.6
+        self.assertEqual(total_cost, "€3.17")  # 16.08 * (0.16428 * 1.2)
+        self.assertEqual(cost_for_full, "€5.28")  # 26.8 * (0.16428 * 1.2)
+    
+    def test_full_charge_cost(self):
+        """Test cost calculation for a full charge"""
+        energy_needed, total_cost, cost_for_full = calculate_costs(
+            battery_size=26.8,
+            start_percentage=0,
+            end_percentage=100,
+            cost_per_kwh=0.16428
+        )
+        
+        self.assertAlmostEqual(energy_needed, 26.8, places=2)  # Full battery
+        self.assertEqual(total_cost, "€5.28")  # 26.8 * (0.16428 * 1.2)
+        self.assertEqual(cost_for_full, "€5.28")  # 26.8 * (0.16428 * 1.2)
+    
+    def test_small_charge_cost(self):
+        """Test cost calculation for a small charge"""
+        energy_needed, total_cost, cost_for_full = calculate_costs(
+            battery_size=26.8,
+            start_percentage=20,
+            end_percentage=30,
+            cost_per_kwh=0.16428
+        )
+        
+        self.assertAlmostEqual(energy_needed, 2.68, places=2)  # 26.8 * 0.1
+        self.assertEqual(total_cost, "€0.53")  # 2.68 * (0.16428 * 1.2)
+        self.assertEqual(cost_for_full, "€5.28")  # 26.8 * (0.16428 * 1.2)
+
 
 if __name__ == '__main__':
     unittest.main()
