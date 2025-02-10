@@ -21,19 +21,47 @@ HTML_TEMPLATE = '''
             <input type="hidden" name="voltage" value="230">
             <div class="form-group">
                 <label for="battery_size">Battery Size (kWh):</label>
-                <input type="number" id="battery_size" name="battery_size" value="26.8" step="0.1" required>
+                <input type="number" id="battery_size" name="battery_size" value="{{ request.form.get('battery_size', '26.8') }}" step="0.1" required>
             </div>
             <div class="form-group">
                 <label for="cost_per_kwh">Electricity Cost (€/kWh before TVA):</label>
-                <input type="number" id="cost_per_kwh" name="cost_per_kwh" value="0.16428" step="0.00001" required>
+                <input type="number" id="cost_per_kwh" name="cost_per_kwh" value="{{ request.form.get('cost_per_kwh', '0.16428') }}" step="0.00001" required>
             </div>
-            <div class="form-group">
-                <label for="start_percentage">Start Battery Percentage (%):</label>
-                <input type="number" id="start_percentage" name="start_percentage" value="20" min="0" max="100" required>
+            <div class="form-group slider-group">
+                <label for="start_percentage">Start Battery Percentage: <span class="percentage-value">20%</span></label>
+                <div class="range-container">
+                    <input type="range" 
+                           id="start_percentage" 
+                           name="start_percentage" 
+                           value="{{ request.form.get('start_percentage', '20') }}" 
+                           min="0" 
+                           max="100" 
+                           step="1" 
+                           required>
+                    <div class="range-labels">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="end_percentage">Target Battery Percentage (%):</label>
-                <input type="number" id="end_percentage" name="end_percentage" value="80" min="0" max="100" required>
+            <div class="form-group slider-group">
+                <label for="end_percentage">Target Battery Percentage: <span class="percentage-value">80%</span></label>
+                <div class="range-container">
+                    <input type="range" 
+                           id="end_percentage" 
+                           name="end_percentage" 
+                           value="{{ request.form.get('end_percentage', '80') }}" 
+                           min="0" 
+                           max="100" 
+                           step="1" 
+                           required>
+                    <div class="range-labels">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
             </div>
             <div class="form-group" style="grid-column: 1 / -1;">
                 <button type="submit">Calculate Charging Times</button>
@@ -97,6 +125,48 @@ HTML_TEMPLATE = '''
             </div>
         {% endif %}
     </div>
+    <script>
+        // Wait for the DOM to be fully loaded
+        window.addEventListener('load', function() {
+            // Get all the elements we need
+            const startSlider = document.getElementById('start_percentage');
+            const endSlider = document.getElementById('end_percentage');
+            const startValue = document.querySelector('label[for="start_percentage"] .percentage-value');
+            const endValue = document.querySelector('label[for="end_percentage"] .percentage-value');
+            
+            // Function to update the percentage display
+            function updatePercentageValue(slider, valueDisplay) {
+                valueDisplay.textContent = slider.value + '%';
+            }
+            
+            // Function to ensure end percentage is not less than start percentage
+            function validateRange() {
+                const start = parseInt(startSlider.value);
+                const end = parseInt(endSlider.value);
+                
+                if (start > end) {
+                    endSlider.value = start;
+                    updatePercentageValue(endSlider, endValue);
+                }
+            }
+            
+            // Add event listeners for the start slider
+            startSlider.addEventListener('input', function() {
+                updatePercentageValue(this, startValue);
+                validateRange();
+            });
+            
+            // Add event listeners for the end slider
+            endSlider.addEventListener('input', function() {
+                updatePercentageValue(this, endValue);
+                validateRange();
+            });
+            
+            // Initialize the displays
+            updatePercentageValue(startSlider, startValue);
+            updatePercentageValue(endSlider, endValue);
+        });
+    </script>
 </body>
 </html>
 '''
