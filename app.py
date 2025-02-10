@@ -84,6 +84,10 @@ HTML_TEMPLATE = '''
             <label for="end_percentage">Target Battery Percentage (%):</label>
             <input type="number" id="end_percentage" name="end_percentage" value="80" min="0" max="100" required>
         </div>
+        <div class="form-group">
+            <label for="cost_per_kwh">Electricity Cost (€/kWh before TVA):</label>
+            <input type="number" id="cost_per_kwh" name="cost_per_kwh" value="0.16428" step="0.00001" required>
+        </div>
         <button type="submit">Calculate Charging Times</button>
     </form>
     {% if charge_times %}
@@ -106,11 +110,46 @@ HTML_TEMPLATE = '''
             </tr>
             {% endfor %}
         </table>
-    </div>
+        
+        <div class="result" style="margin-top: 20px;">
+            <h2>Cost Summary</h2>
+            <p>Electricity rate: €{{ "%.5f"|format(cost_per_kwh) }}/kWh (before TVA)</p>
+            <p>Rate with TVA (20%): €{{ "%.5f"|format(cost_per_kwh * 1.2) }}/kWh</p>
+            <p>Total energy needed: {{ "%.1f"|format(energy_needed) }} kWh</p>
+            <p>Total cost: {{ total_cost }}</p>
+            <p>Cost for full 100% charge: {{ cost_for_full }}</p>
+        </div>
     {% endif %}
 </body>
 </html>
 '''
+
+def calculate_costs(battery_size, start_percentage, end_percentage, cost_per_kwh):
+    """Calculate electricity costs for charging.
+    
+    Args:
+        battery_size (float): Battery capacity in kWh
+        start_percentage (float): Starting battery percentage
+        end_percentage (float): Target battery percentage
+        cost_per_kwh (float): Electricity cost per kWh before TVA
+        
+    Returns:
+        tuple: (energy_needed, total_cost, cost_per_10_percent)
+    """
+    # Calculate energy needed
+    energy_needed = battery_size * (end_percentage - start_percentage) / 100
+    energy_for_full = battery_size  # Energy needed for 0-100%
+    
+    # Calculate costs with TVA (20%)
+    tva_multiplier = 1.20
+    energy_cost_with_tva = cost_per_kwh * tva_multiplier
+    
+    # Format costs with euro symbol and 2 decimal places
+    total_cost = f"€{energy_needed * energy_cost_with_tva:.2f}"
+    cost_for_full = f"€{energy_for_full * energy_cost_with_tva:.2f}"
+    
+    return energy_needed, total_cost, cost_for_full
+
 
 def calculate_charging_time(battery_size, voltage, amperage, start_percentage, end_percentage):
     # Validate percentage bounds
@@ -158,6 +197,14 @@ def home():
             
             # Calculate for different amperage values
             amperages = [6, 8, 10, 16]
+            cost_per_kwh = float(request.form['cost_per_kwh'])
+            
+            # Calculate costs
+            energy_needed, total_cost, cost_for_full = calculate_costs(
+                battery_size, start_percentage, end_percentage, cost_per_kwh
+            )
+            
+            # Calculate charging times for different amperages
             charge_times = [
                 calculate_charging_time(
                     battery_size, voltage, amperage,
@@ -165,10 +212,23 @@ def home():
                 )
                 for amperage in amperages
             ]
+            
+            return render_template_string(HTML_TEMPLATE,
+                                   charge_times=charge_times,
+                                   cost_per_kwh=cost_per_kwh,
+                                   energy_needed=energy_needed,
+                                   total_cost=total_cost,
+                                   cost_for_full=cost_for_full)
         except ValueError:
             charge_times = [{'amperage': 0, 'power_kw': 0, 'duration': "Error: Please enter valid numbers"}]
     
-    return render_template_string(HTML_TEMPLATE, charge_times=charge_times)
+    # Provide default values for cost variables when form hasn't been submitted
+    return render_template_string(HTML_TEMPLATE,
+                               charge_times=charge_times,
+                               cost_per_kwh=0.16428,
+                               energy_needed=0,
+                               total_cost="€0.00",
+                               cost_for_full="€0.00")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
