@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
@@ -231,5 +232,6 @@ def home():
                                cost_for_full="€0.00")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=False)
 
