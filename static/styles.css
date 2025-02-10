@@ -1,0 +1,344 @@
+:root {
+    /* Light mode colors */
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --input-bg: #f5f5f5;
+    --border-color: #dddddd;
+    --success-bg: #e8f5e9;
+    --success-text: #2e7d32;
+    --error-bg: #ffebee;
+    --error-text: #c62828;
+    --table-header-bg: #f8f9fa;
+    --table-border: #e0e0e0;
+    --table-hover: #f5f5f5;
+    --cost-summary-bg: #e3f2fd;
+    --cost-summary-text: #1565c0;
+}
+
+/* Dark mode colors */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --input-bg: #333333;
+        --border-color: #404040;
+        --success-bg: #1b5e20;
+        --success-text: #81c784;
+        --error-bg: #b71c1c;
+        --error-text: #ef9a9a;
+        --table-header-bg: #2d2d2d;
+        --table-border: #404040;
+        --table-hover: #2d2d2d;
+        --cost-summary-bg: #0d47a1;
+        --cost-summary-text: #90caf9;
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 2.5em;
+}
+
+form {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 30px;
+    background-color: var(--input-bg);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+@media (min-width: 768px) {
+    form {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+input[type="number"], input[type="range"] {
+    width: 100%;
+    transition: border-color 0.3s;
+}
+
+input[type="number"] {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+input[type="number"]:focus {
+    border-color: #2196f3;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+/* Range Slider Styles */
+.slider-group {
+    margin-bottom: 25px;
+}
+
+.slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.percentage-value {
+    font-weight: bold;
+    color: #2196f3;
+    min-width: 48px;
+    text-align: right;
+}
+
+.range-container {
+    position: relative;
+    padding: 10px 0;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    outline: none;
+    margin: 0;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #2196f3;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #2196f3;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+    background: #1976d2;
+    transform: scale(1.1);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+    background: #1976d2;
+    transform: scale(1.1);
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(0.95);
+}
+
+input[type="range"]:active::-moz-range-thumb {
+    transform: scale(0.95);
+}
+
+/* Dark mode adjustments for range slider */
+@media (prefers-color-scheme: dark) {
+    input[type="range"] {
+        background: var(--border-color);
+    }
+    
+    .percentage-value {
+        color: #64b5f6;
+    }
+}
+
+button {
+    padding: 12px 24px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background-color: #1976d2;
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 767px) {
+    button {
+        width: 100%;
+    }
+}
+
+.results {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+thead {
+    background-color: var(--table-header-bg);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--table-border);
+}
+
+tr:hover {
+    background-color: var(--table-hover);
+}
+
+/* Cost Summary Section */
+.cost-summary {
+    background-color: var(--cost-summary-bg);
+    color: var(--cost-summary-text);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cost-summary h2 {
+    color: var(--cost-summary-text);
+    margin-top: 0;
+}
+
+/* Environmental Impact Section */
+.environmental-impact {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.environmental-impact h2, .environmental-impact h3 {
+    color: var(--success-text);
+    text-align: left;
+    margin-top: 0;
+}
+
+.environmental-impact ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 10px 0;
+}
+
+.environmental-impact li {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.environmental-impact li:before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--success-text);
+}
+
+.environmental-impact small {
+    display: block;
+    margin-top: 15px;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 10px;
+    }
+    
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    th, td {
+        padding: 8px;
+    }
+}

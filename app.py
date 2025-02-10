@@ -3,144 +3,170 @@ from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
-# HTML template with inline CSS
+# HTML template with external CSS
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EV Charge Calculator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        form {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="number"] {
-            width: 200px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e7f3fe;
-            border-radius: 4px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f8f9fa;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>EV Charge Calculator</h1>
-    <form method="post">
-        <input type="hidden" name="voltage" value="230">
-        <div class="form-group">
-            <label for="battery_size">Battery Size (kWh):</label>
-            <input type="number" id="battery_size" name="battery_size" value="26.8" step="0.1" required>
-        </div>
-        <div class="form-group">
-            <label for="start_percentage">Start Battery Percentage (%):</label>
-            <input type="number" id="start_percentage" name="start_percentage" value="20" min="0" max="100" required>
-        </div>
-        <div class="form-group">
-            <label for="end_percentage">Target Battery Percentage (%):</label>
-            <input type="number" id="end_percentage" name="end_percentage" value="80" min="0" max="100" required>
-        </div>
-        <div class="form-group">
-            <label for="cost_per_kwh">Electricity Cost (€/kWh before TVA):</label>
-            <input type="number" id="cost_per_kwh" name="cost_per_kwh" value="0.16428" step="0.00001" required>
-        </div>
-        <button type="submit">Calculate Charging Times</button>
-    </form>
-    {% if charge_times %}
-    <div class="result">
-        <h2>Charging Time Estimates</h2>
-        <p>For EU standard voltage (230V):</p>
-        <table>
-            <tr>
-                <th>Current</th>
-                <th>Power</th>
-                <th>Total Charging Time</th>
-                <th>Time per 10%</th>
-            </tr>
-            {% for time in charge_times %}
-            <tr>
-                <td>{{ time.amperage }}A</td>
-                <td>{{ time.power_kw }}kW</td>
-                <td>{{ time.duration }}</td>
-                <td>{{ time.time_per_10_percent }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+    <div class="container">
+        <h1>EV Charge Calculator</h1>
         
-        <div class="result" style="margin-top: 20px;">
-            <h2>Cost Summary</h2>
-            <p>Electricity rate: €{{ "%.5f"|format(cost_per_kwh) }}/kWh (before TVA)</p>
-            <p>Rate with TVA (20%): €{{ "%.5f"|format(cost_per_kwh * 1.2) }}/kWh</p>
-            <p>Total energy needed: {{ "%.1f"|format(energy_needed) }} kWh</p>
-            <p>Total cost: {{ total_cost }}</p>
-            <p>Cost for full 100% charge: {{ cost_for_full }}</p>
-        </div>
+        <form method="post">
+            <input type="hidden" name="voltage" value="230">
+            <div class="form-group">
+                <label for="battery_size">Battery Size (kWh):</label>
+                <input type="number" id="battery_size" name="battery_size" value="{{ request.form.get('battery_size', '26.8') }}" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label for="cost_per_kwh">Electricity Cost (€/kWh before TVA):</label>
+                <input type="number" id="cost_per_kwh" name="cost_per_kwh" value="{{ request.form.get('cost_per_kwh', '0.16428') }}" step="0.00001" required>
+            </div>
+            <div class="form-group slider-group">
+                <label for="start_percentage">Start Battery Percentage: <span class="percentage-value">20%</span></label>
+                <div class="range-container">
+                    <input type="range" 
+                           id="start_percentage" 
+                           name="start_percentage" 
+                           value="{{ request.form.get('start_percentage', '20') }}" 
+                           min="0" 
+                           max="100" 
+                           step="1" 
+                           required>
+                    <div class="range-labels">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group slider-group">
+                <label for="end_percentage">Target Battery Percentage: <span class="percentage-value">80%</span></label>
+                <div class="range-container">
+                    <input type="range" 
+                           id="end_percentage" 
+                           name="end_percentage" 
+                           value="{{ request.form.get('end_percentage', '80') }}" 
+                           min="0" 
+                           max="100" 
+                           step="1" 
+                           required>
+                    <div class="range-labels">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <button type="submit">Calculate Charging Times</button>
+            </div>
+        </form>
         
-        <div class="result" style="margin-top: 20px; background-color: #e8f5e9;">
-            <h2>Environmental Impact</h2>
-            <p>Estimated range: {{ environmental.ev_range }} km</p>
-            <p>EV CO2 emissions: {{ environmental.ev_emissions }}</p>
-            <p>CO2 savings vs petrol: {{ environmental.petrol_savings }} kg</p>
-            <p>CO2 savings vs diesel: {{ environmental.diesel_savings }} kg</p>
-            <h3 style="margin-top: 15px;">Air Quality Impact</h3>
-            <p>NOx emissions avoided:</p>
-            <ul>
-                <li>vs petrol: {{ environmental.petrol_nox_saved }}g</li>
-                <li>vs diesel: {{ environmental.diesel_nox_saved }}g</li>
-            </ul>
-            <p>Particulate Matter (PM) emissions avoided:</p>
-            <ul>
-                <li>vs petrol: {{ environmental.petrol_pm_saved }}g</li>
-                <li>vs diesel: {{ environmental.diesel_pm_saved }}g</li>
-            </ul>
-            <p><small>Based on Ireland's grid carbon intensity and Euro 6 vehicle emission standards (2023)</small></p>
-        </div>
-    {% endif %}
+        {% if charge_times %}
+            <div class="results">
+                <h2>Charging Time Estimates</h2>
+                <p>For EU standard voltage (230V):</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Current</th>
+                            <th>Power</th>
+                            <th>Total Charging Time</th>
+                            <th>Time per 10%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for time in charge_times %}
+                        <tr>
+                            <td>{{ time.amperage }}A</td>
+                            <td>{{ time.power_kw }}kW</td>
+                            <td>{{ time.duration }}</td>
+                            <td>{{ time.time_per_10_percent }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="cost-summary">
+                    <h2>Cost Summary</h2>
+                    <p>Electricity rate: €{{ "%.5f"|format(cost_per_kwh) }}/kWh (before TVA)</p>
+                    <p>Rate with TVA (20%): €{{ "%.5f"|format(cost_per_kwh * 1.2) }}/kWh</p>
+                    <p>Total energy needed: {{ "%.1f"|format(energy_needed) }} kWh</p>
+                    <p>Total cost: {{ total_cost }}</p>
+                    <p>Cost for full 100% charge: {{ cost_for_full }}</p>
+                </div>
+            </div>
+            
+            <div class="environmental-impact">
+                <h2>Environmental Impact</h2>
+                <p>Estimated range: {{ environmental.ev_range }} km</p>
+                <p>EV CO2 emissions: {{ environmental.ev_emissions }}</p>
+                <p>CO2 savings vs petrol: {{ environmental.petrol_savings }} kg</p>
+                <p>CO2 savings vs diesel: {{ environmental.diesel_savings }} kg</p>
+                
+                <h3>Air Quality Impact</h3>
+                <p>NOx emissions avoided:</p>
+                <ul>
+                    <li>vs petrol: {{ environmental.petrol_nox_saved }}g</li>
+                    <li>vs diesel: {{ environmental.diesel_nox_saved }}g</li>
+                </ul>
+                <p>Particulate Matter (PM) emissions avoided:</p>
+                <ul>
+                    <li>vs petrol: {{ environmental.petrol_pm_saved }}g</li>
+                    <li>vs diesel: {{ environmental.diesel_pm_saved }}g</li>
+                </ul>
+                <small>Based on Ireland's grid carbon intensity and Euro 6 vehicle emission standards (2023)</small>
+            </div>
+        {% endif %}
+    </div>
+    <script>
+        // Wait for the DOM to be fully loaded
+        window.addEventListener('load', function() {
+            // Get all the elements we need
+            const startSlider = document.getElementById('start_percentage');
+            const endSlider = document.getElementById('end_percentage');
+            const startValue = document.querySelector('label[for="start_percentage"] .percentage-value');
+            const endValue = document.querySelector('label[for="end_percentage"] .percentage-value');
+            
+            // Function to update the percentage display
+            function updatePercentageValue(slider, valueDisplay) {
+                valueDisplay.textContent = slider.value + '%';
+            }
+            
+            // Function to ensure end percentage is not less than start percentage
+            function validateRange() {
+                const start = parseInt(startSlider.value);
+                const end = parseInt(endSlider.value);
+                
+                if (start > end) {
+                    endSlider.value = start;
+                    updatePercentageValue(endSlider, endValue);
+                }
+            }
+            
+            // Add event listeners for the start slider
+            startSlider.addEventListener('input', function() {
+                updatePercentageValue(this, startValue);
+                validateRange();
+            });
+            
+            // Add event listeners for the end slider
+            endSlider.addEventListener('input', function() {
+                updatePercentageValue(this, endValue);
+                validateRange();
+            });
+            
+            // Initialize the displays
+            updatePercentageValue(startSlider, startValue);
+            updatePercentageValue(endSlider, endValue);
+        });
+    </script>
 </body>
 </html>
 '''
