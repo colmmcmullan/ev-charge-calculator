@@ -1,5 +1,5 @@
 import unittest
-from app import calculate_charging_time, calculate_costs
+from app import calculate_charging_time, calculate_costs, calculate_environmental_impact
 
 class TestCalculateChargingTime(unittest.TestCase):
     def test_standard_charging_scenario(self):
@@ -143,6 +143,40 @@ class TestCalculateCosts(unittest.TestCase):
         self.assertAlmostEqual(energy_needed, 2.68, places=2)  # 26.8 * 0.1
         self.assertEqual(total_cost, "€0.53")  # 2.68 * (0.16428 * 1.2)
         self.assertEqual(cost_for_full, "€5.28")  # 26.8 * (0.16428 * 1.2)
+
+
+class TestEnvironmentalImpact(unittest.TestCase):
+    """Test environmental impact calculations"""
+    
+    def test_standard_charge_impact(self):
+        """Test environmental impact for a standard charge"""
+        impact = calculate_environmental_impact(16.08)  # 60% of 26.8 kWh battery
+        
+        self.assertEqual(impact['ev_range'], '80.4')  # 16.08 kWh / 0.2 kWh/km
+        self.assertEqual(impact['ev_emissions'], '3.54 kg')  # 16.08 * 0.220
+        self.assertEqual(impact['petrol_savings'], '6.11')  # (80.4 * 0.120) - 3.54
+        self.assertEqual(impact['diesel_savings'], '5.31')  # (80.4 * 0.110) - 3.54
+        
+        # Air pollution savings
+        self.assertEqual(impact['petrol_nox_saved'], '4.8')  # (80.4 * 60.0) / 1000
+        self.assertEqual(impact['diesel_nox_saved'], '6.4')  # (80.4 * 80.0) / 1000
+        self.assertEqual(impact['petrol_pm_saved'], '0.4')   # (80.4 * 4.5) / 1000
+        self.assertEqual(impact['diesel_pm_saved'], '0.4')   # (80.4 * 4.5) / 1000
+    
+    def test_small_charge_impact(self):
+        """Test environmental impact for a small charge"""
+        impact = calculate_environmental_impact(2.68)  # 10% of 26.8 kWh battery
+        
+        self.assertEqual(impact['ev_range'], '13.4')  # 2.68 kWh / 0.2 kWh/km
+        self.assertEqual(impact['ev_emissions'], '589.6 g')  # 2.68 * 0.220 * 1000
+        self.assertEqual(impact['petrol_savings'], '1.02')  # (13.4 * 0.120) - 0.5896
+        self.assertEqual(impact['diesel_savings'], '0.88')  # (13.4 * 0.110) - 0.5896
+        
+        # Air pollution savings
+        self.assertEqual(impact['petrol_nox_saved'], '0.8')  # (13.4 * 60.0) / 1000
+        self.assertEqual(impact['diesel_nox_saved'], '1.1')  # (13.4 * 80.0) / 1000
+        self.assertEqual(impact['petrol_pm_saved'], '0.1')   # (13.4 * 4.5) / 1000
+        self.assertEqual(impact['diesel_pm_saved'], '0.1')   # (13.4 * 4.5) / 1000
 
 
 if __name__ == '__main__':
