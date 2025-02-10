@@ -120,10 +120,61 @@ HTML_TEMPLATE = '''
             <p>Total cost: {{ total_cost }}</p>
             <p>Cost for full 100% charge: {{ cost_for_full }}</p>
         </div>
+        
+        <div class="result" style="margin-top: 20px; background-color: #e8f5e9;">
+            <h2>Environmental Impact</h2>
+            <p>Estimated range: {{ environmental.ev_range }} km</p>
+            <p>EV CO2 emissions: {{ environmental.ev_emissions }}</p>
+            <p>CO2 savings vs petrol: {{ environmental.petrol_savings }} kg</p>
+            <p>CO2 savings vs diesel: {{ environmental.diesel_savings }} kg</p>
+            <p><small>Based on Ireland's grid carbon intensity and average new vehicle emissions (2023)</small></p>
+        </div>
     {% endif %}
 </body>
 </html>
 '''
+
+def calculate_environmental_impact(energy_needed):
+    """
+    Calculate environmental impact and savings compared to ICE vehicles.
+    
+    Args:
+        energy_needed (float): Energy needed for charging in kWh
+        
+    Returns:
+        dict: Environmental impact metrics
+    """
+    # Average CO2 emissions per kWh of electricity in Ireland (2023)
+    grid_carbon_intensity = 0.220  # kg CO2/kWh
+    
+    # Average petrol car emissions for the same distance
+    # Assuming 0.2 kWh/km for EV efficiency
+    ev_range = energy_needed / 0.2  # km
+    petrol_emissions_per_km = 0.120  # kg CO2/km (average new car 2023)
+    diesel_emissions_per_km = 0.110  # kg CO2/km (average new car 2023)
+    
+    # Calculate emissions
+    ev_emissions = energy_needed * grid_carbon_intensity
+    petrol_emissions = ev_range * petrol_emissions_per_km
+    diesel_emissions = ev_range * diesel_emissions_per_km
+    
+    # Calculate savings
+    petrol_savings = petrol_emissions - ev_emissions
+    diesel_savings = diesel_emissions - ev_emissions
+    
+    # Convert to more readable units if small
+    if ev_emissions < 1:
+        ev_emissions_str = f"{ev_emissions * 1000:.1f} g"
+    else:
+        ev_emissions_str = f"{ev_emissions:.2f} kg"
+    
+    return {
+        'ev_emissions': ev_emissions_str,
+        'ev_range': f"{ev_range:.1f}",
+        'petrol_savings': f"{petrol_savings:.2f}",
+        'diesel_savings': f"{diesel_savings:.2f}"
+    }
+
 
 def calculate_costs(battery_size, start_percentage, end_percentage, cost_per_kwh):
     """Calculate electricity costs for charging.
@@ -205,6 +256,9 @@ def home():
                 battery_size, start_percentage, end_percentage, cost_per_kwh
             )
             
+            # Calculate environmental impact
+            environmental_impact = calculate_environmental_impact(energy_needed)
+            
             # Calculate charging times for different amperages
             charge_times = [
                 calculate_charging_time(
@@ -219,7 +273,8 @@ def home():
                                    cost_per_kwh=cost_per_kwh,
                                    energy_needed=energy_needed,
                                    total_cost=total_cost,
-                                   cost_for_full=cost_for_full)
+                                   cost_for_full=cost_for_full,
+                                   environmental=environmental_impact)
         except ValueError:
             charge_times = [{'amperage': 0, 'power_kw': 0, 'duration': "Error: Please enter valid numbers"}]
     
@@ -229,7 +284,11 @@ def home():
                                cost_per_kwh=0.16428,
                                energy_needed=0,
                                total_cost="€0.00",
-                               cost_for_full="€0.00")
+                               cost_for_full="€0.00",
+                               environmental={'ev_emissions': '0 g',
+                                            'ev_range': '0',
+                                            'petrol_savings': '0.00',
+                                            'diesel_savings': '0.00'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
