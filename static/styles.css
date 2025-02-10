@@ -85,20 +85,117 @@ label {
     font-weight: 500;
 }
 
-input[type="number"] {
+input[type="number"], input[type="range"] {
     width: 100%;
+    transition: border-color 0.3s;
+}
+
+input[type="number"] {
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background-color: var(--bg-color);
     color: var(--text-color);
-    transition: border-color 0.3s;
 }
 
 input[type="number"]:focus {
     border-color: #2196f3;
     outline: none;
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+/* Range Slider Styles */
+.slider-group {
+    margin-bottom: 25px;
+}
+
+.slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.percentage-value {
+    font-weight: bold;
+    color: #2196f3;
+    min-width: 48px;
+    text-align: right;
+}
+
+.range-container {
+    position: relative;
+    padding: 10px 0;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    outline: none;
+    margin: 0;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #2196f3;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #2196f3;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+    background: #1976d2;
+    transform: scale(1.1);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+    background: #1976d2;
+    transform: scale(1.1);
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(0.95);
+}
+
+input[type="range"]:active::-moz-range-thumb {
+    transform: scale(0.95);
+}
+
+/* Dark mode adjustments for range slider */
+@media (prefers-color-scheme: dark) {
+    input[type="range"] {
+        background: var(--border-color);
+    }
+    
+    .percentage-value {
+        color: #64b5f6;
+    }
 }
 
 button {
