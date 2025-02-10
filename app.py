@@ -127,7 +127,18 @@ HTML_TEMPLATE = '''
             <p>EV CO2 emissions: {{ environmental.ev_emissions }}</p>
             <p>CO2 savings vs petrol: {{ environmental.petrol_savings }} kg</p>
             <p>CO2 savings vs diesel: {{ environmental.diesel_savings }} kg</p>
-            <p><small>Based on Ireland's grid carbon intensity and average new vehicle emissions (2023)</small></p>
+            <h3 style="margin-top: 15px;">Air Quality Impact</h3>
+            <p>NOx emissions avoided:</p>
+            <ul>
+                <li>vs petrol: {{ environmental.petrol_nox_saved }}g</li>
+                <li>vs diesel: {{ environmental.diesel_nox_saved }}g</li>
+            </ul>
+            <p>Particulate Matter (PM) emissions avoided:</p>
+            <ul>
+                <li>vs petrol: {{ environmental.petrol_pm_saved }}g</li>
+                <li>vs diesel: {{ environmental.diesel_pm_saved }}g</li>
+            </ul>
+            <p><small>Based on Ireland's grid carbon intensity and Euro 6 vehicle emission standards (2023)</small></p>
         </div>
     {% endif %}
 </body>
@@ -142,7 +153,7 @@ def calculate_environmental_impact(energy_needed):
         energy_needed (float): Energy needed for charging in kWh
         
     Returns:
-        dict: Environmental impact metrics
+        dict: Environmental impact metrics including CO2 and air pollutants
     """
     # Average CO2 emissions per kWh of electricity in Ireland (2023)
     grid_carbon_intensity = 0.220  # kg CO2/kWh
@@ -153,16 +164,28 @@ def calculate_environmental_impact(energy_needed):
     petrol_emissions_per_km = 0.120  # kg CO2/km (average new car 2023)
     diesel_emissions_per_km = 0.110  # kg CO2/km (average new car 2023)
     
-    # Calculate emissions
+    # Air pollutant emissions per km (mg/km) - Euro 6 standards
+    petrol_nox = 60.0  # mg/km NOx
+    diesel_nox = 80.0  # mg/km NOx
+    petrol_pm = 4.5   # mg/km PM (both PM2.5 and PM10)
+    diesel_pm = 4.5   # mg/km PM (both PM2.5 and PM10)
+    
+    # Calculate CO2 emissions
     ev_emissions = energy_needed * grid_carbon_intensity
     petrol_emissions = ev_range * petrol_emissions_per_km
     diesel_emissions = ev_range * diesel_emissions_per_km
     
-    # Calculate savings
+    # Calculate CO2 savings
     petrol_savings = petrol_emissions - ev_emissions
     diesel_savings = diesel_emissions - ev_emissions
     
-    # Convert to more readable units if small
+    # Calculate air pollutant savings (in grams)
+    petrol_nox_saved = (ev_range * petrol_nox) / 1000  # Convert mg to g
+    diesel_nox_saved = (ev_range * diesel_nox) / 1000
+    petrol_pm_saved = (ev_range * petrol_pm) / 1000
+    diesel_pm_saved = (ev_range * diesel_pm) / 1000
+    
+    # Convert CO2 to more readable units if small
     if ev_emissions < 1:
         ev_emissions_str = f"{ev_emissions * 1000:.1f} g"
     else:
@@ -172,7 +195,11 @@ def calculate_environmental_impact(energy_needed):
         'ev_emissions': ev_emissions_str,
         'ev_range': f"{ev_range:.1f}",
         'petrol_savings': f"{petrol_savings:.2f}",
-        'diesel_savings': f"{diesel_savings:.2f}"
+        'diesel_savings': f"{diesel_savings:.2f}",
+        'petrol_nox_saved': f"{petrol_nox_saved:.1f}",
+        'diesel_nox_saved': f"{diesel_nox_saved:.1f}",
+        'petrol_pm_saved': f"{petrol_pm_saved:.1f}",
+        'diesel_pm_saved': f"{diesel_pm_saved:.1f}"
     }
 
 

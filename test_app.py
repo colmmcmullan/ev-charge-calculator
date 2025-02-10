@@ -156,6 +156,12 @@ class TestEnvironmentalImpact(unittest.TestCase):
         self.assertEqual(impact['ev_emissions'], '3.54 kg')  # 16.08 * 0.220
         self.assertEqual(impact['petrol_savings'], '6.11')  # (80.4 * 0.120) - 3.54
         self.assertEqual(impact['diesel_savings'], '5.31')  # (80.4 * 0.110) - 3.54
+        
+        # Air pollution savings
+        self.assertEqual(impact['petrol_nox_saved'], '4.8')  # (80.4 * 60.0) / 1000
+        self.assertEqual(impact['diesel_nox_saved'], '6.4')  # (80.4 * 80.0) / 1000
+        self.assertEqual(impact['petrol_pm_saved'], '0.4')   # (80.4 * 4.5) / 1000
+        self.assertEqual(impact['diesel_pm_saved'], '0.4')   # (80.4 * 4.5) / 1000
     
     def test_small_charge_impact(self):
         """Test environmental impact for a small charge"""
@@ -165,6 +171,12 @@ class TestEnvironmentalImpact(unittest.TestCase):
         self.assertEqual(impact['ev_emissions'], '589.6 g')  # 2.68 * 0.220 * 1000
         self.assertEqual(impact['petrol_savings'], '1.02')  # (13.4 * 0.120) - 0.5896
         self.assertEqual(impact['diesel_savings'], '0.88')  # (13.4 * 0.110) - 0.5896
+        
+        # Air pollution savings
+        self.assertEqual(impact['petrol_nox_saved'], '0.8')  # (13.4 * 60.0) / 1000
+        self.assertEqual(impact['diesel_nox_saved'], '1.1')  # (13.4 * 80.0) / 1000
+        self.assertEqual(impact['petrol_pm_saved'], '0.1')   # (13.4 * 4.5) / 1000
+        self.assertEqual(impact['diesel_pm_saved'], '0.1')   # (13.4 * 4.5) / 1000
 
 
 if __name__ == '__main__':
